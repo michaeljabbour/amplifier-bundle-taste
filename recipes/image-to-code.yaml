@@ -1,0 +1,224 @@
+# recipes/image-to-code.yaml
+#
+# 3-stage image-first design-to-code workflow, derived from the
+# `image-to-code-skill` (1228 lines) in the source taste-skill repo.
+#
+# Why this is a recipe and not a skill:
+# The image-to-code workflow is inherently sequential — references must exist
+# before analysis can run, and analysis must exist before implementation.
+# Each stage produces an artifact the next stage consumes. Skills cannot
+# enforce phase-gating between stages; recipes can. Each step below stops
+# until its outputs are committed to the session state.
+#
+# Source sections cited in the prompt templates:
+#   §2  Mandatory image-first rule
+#   §3  Generate enough images rule
+#   §4  Codex-specific section image rule (1 section = 1 image)
+#   §5  Do not crop old images
+#   §6  Fresh re-generation rule
+#   §8  Clean analysis standard
+#   §9  Deep image analysis requirement
+#   §12 Combinatorial variation engine
+#   §14 Hero minimalism rules
+#   §16 Anti-nested-box rule
+#   §17 Reduce micro-UI clutter rule
+#   §21–25 Text / typography / spacing / button / color extraction
+#   §26 Design-to-code copy discipline
+#   §27 Anti-drift implementation rule
+#   §29 Anti-AI-slop rules
+#   §33 Default section packs (4 / 8 / 12)
+
+name: "image-to-code"
+description: >-
+  Image-first design-to-code workflow. Generates N section reference images,
+  performs systematic visual analysis, then implements faithful frontend code.
+  Three stages with phase-gating between each. Output-discipline behavior is
+  expected to be mounted concurrently so generated code contains no
+  placeholder elisions.
+
+context:
+  # Number of design sections to generate. Default packs: 4, 8, 12 (see §33).
+  n_sections: 4
+  # Where the implemented code goes.
+  target_path: "src/app"
+  # Archetype overlay to compose with the base design-taste skill.
+  # One of: minimalist, brutalist, soft-editorial, gpt
+  archetype: "minimalist"
+  # Frontend framework convention for the implementation step.
+  framework: "next-app-router"
+  # Optional: a short brief from the user describing the site (purpose,
+  # audience, brand mood). Used in stage 1 to seed image prompts.
+  brief: ""
+
+steps:
+  - id: "generate-references"
+    description: >-
+      Generate {{n_sections}} reference images — one image per section. In
+      Codex / Amplifier, never compress multiple sections into one tiny board.
+      Use the imagegen MCP. Commit to ONE coherent visual combination from
+      the design-variations menu before generating the first image; reuse the
+      same combination across all {{n_sections}} images.
+    tool: "imagegen.generate_image"
+    iterate:
+      over: "section_pack({{n_sections}})"
+      as: "section"
+    prompt_template: |
+      Generate ONE reference image for the "{{section.name}}" section of a
+      website matching this brief: {{brief}}.
+
+      Constraints (from image-to-code-skill §2, §3, §4, §14, §16, §17):
+      - This is one section, one image. Do NOT pack multiple sections into
+        one board. Make the section large, readable, and analyzable.
+      - Pick ONE coherent visual combination from
+        @taste-skill:context/design-variations.md and reuse it across every
+        section in this run. Do not default to the first option in any list.
+      - Apply the {{archetype}} archetype overlay
+        (@taste-skill:skills/{{archetype}}-taste.md) for palette, typography,
+        and component family.
+      - For the hero section: 1–3 line headline maximum, clean composition,
+        no fake stats / pills / pseudo-system labels.
+      - No cards-inside-cards-inside-cards. No giant rounded section
+        wrappers. No purple/blue AI-gradient backgrounds.
+      - Use placeholder image sources that are picsum.photos or generated;
+        never broken Unsplash links.
+
+      Output: a single high-resolution image saved to
+      .amplifier/image-to-code/{{n_sections}}/{{section.index}}-{{section.name}}.png
+    outputs:
+      - reference_image_paths
+
+    # Phase-gate: if any section image is unreadable (text too small, layout
+    # ambiguous), regenerate that section as a FRESH standalone image. Do
+    # NOT crop from a larger composite (§5). Re-run this step on those
+    # sections only.
+    on_unclear:
+      regenerate: true
+      crop_old_images: false
+
+  - id: "analyze-design"
+    description: >-
+      Systematic, structured deep analysis of every generated reference
+      image. Extract typography stack, spacing scale, color palette,
+      component conventions. Flag any anti-drift risks before implementation.
+    agent: "design-intelligence:component-designer"
+    inputs:
+      reference_image_paths: "{{steps.generate-references.outputs.reference_image_paths}}"
+    prompt_template: |
+      Analyze the {{n_sections}} generated reference images using the
+      systematic protocol from image-to-code-skill (Sections 8 through 29
+      of the source). Treat the images as the design specification — not
+      vibes, not impressions.
+
+      For EACH image, extract:
+        1. Section identity and visual priority (§8, §9).
+        2. All readable text — hero headline, subheadline, CTA labels,
+           section titles, navbar items, footer items (§21).
+        3. Typography: size relationships, weight relationships, line count,
+           line-height feel, tracking feel, serif vs. sans behavior, display
+           vs. body contrast, CTA text scale (§22).
+        4. Spacing: headline-to-subheadline distance, text-to-button
+           distance, card-to-card distance, section top/bottom padding,
+           side gutters, card padding, image-to-text distance, navbar
+           spacing, overall cadence (§23).
+        5. Buttons / components: size, shape, radius, fill vs. outline,
+           icon usage, primary vs. secondary hierarchy, card structure,
+           badge usage, dividers, shadows, borders, pill logic, input
+           styling (§24).
+        6. Colors: background, panels, accents, button fills, text
+           hierarchy, border logic, shadow mood, image tint, gradient
+           restraint (§25).
+        7. Layout grid logic, section ordering, density, repeated motifs
+           (§9).
+
+      Then produce a CONSOLIDATED analysis covering the whole site:
+        - Coherence check: do all {{n_sections}} images share one brand
+          world? (§34 multi-image consistency.)
+        - Anti-drift flags: any place where the image is ambiguous and
+          implementation might silently regress to defaults — flag it
+          explicitly (§27, §28).
+        - AI-slop audit: cards-inside-cards, purple/blue gradients,
+          centered-hero overuse, three-equal-card rows, fake stat pills,
+          cheap meta-labels like "SECTION 01" (§29).
+
+      Output a structured Markdown design-analysis doc at
+      .amplifier/image-to-code/{{n_sections}}/analysis.md with sections:
+        ## Per-section findings (one block per image)
+        ## Consolidated typography stack
+        ## Consolidated spacing scale
+        ## Consolidated color palette (with hex values)
+        ## Component conventions
+        ## Anti-drift flags
+        ## Open questions (require fresh detail image OR user decision)
+
+      If any "Open questions" remain, halt with a message naming the
+      sections that need a fresh detail image and stop. Do not proceed to
+      implementation with unresolved ambiguity.
+    outputs:
+      - design_analysis_path
+
+    # Phase-gate: if analysis flags unresolved ambiguity, the recipe halts
+    # for a regenerate-or-decide loop. The user resolves or asks step 1 to
+    # regenerate the named sections as fresh standalone detail images
+    # before step 3 runs.
+    requires_human_review_if:
+      - "design_analysis.open_questions.length > 0"
+
+  - id: "implement-code"
+    description: >-
+      Implement {{n_sections}} sections at {{target_path}} faithful to the
+      design analysis. Apply anti-drift rules. Compose design-taste base +
+      {{archetype}} archetype overlay. Output-discipline behavior is mounted,
+      so produce complete code with no `// ...` placeholders.
+    agent: "design-intelligence:component-designer"
+    inputs:
+      design_analysis_path: "{{steps.analyze-design.outputs.design_analysis_path}}"
+      reference_image_paths: "{{steps.generate-references.outputs.reference_image_paths}}"
+    prompt_template: |
+      Implement {{n_sections}} sections at {{target_path}} for the
+      {{framework}} stack, faithful to the analysis at
+      {{design_analysis_path}} and the reference images at
+      {{reference_image_paths}}.
+
+      Skill composition:
+        - Base: @taste-skill:skills/design-taste.md (3 dials,
+          interactivity isolation, performance guardrails).
+        - Archetype overlay: @taste-skill:skills/{{archetype}}-taste.md.
+        - Behavior mounted: output-discipline — no `// ...`, no
+          "for brevity", no "rest of code" elisions. Follow the
+          scope-build-cross-check protocol from
+          @taste-skill:skills/output-discipline.md.
+        - Reference: @taste-skill:context/ai-tells-design.md for the
+          merged ban list and @taste-skill:context/dials.md for threshold
+          rules.
+
+      Anti-drift rules (image-to-code-skill §26, §27):
+        - Do NOT simplify into default templates.
+        - Do NOT replace distinctive sections with generic rows.
+        - Do NOT compress generous spacing into dense layout.
+        - Do NOT replace strong typography with plain hierarchy.
+        - Do NOT remove the page's visual identity for convenience.
+        - Do NOT reintroduce nested-box complexity that the analysis
+          intentionally flagged.
+        - The final coded result must still feel like the same website
+          as the generated references.
+
+      For ambiguous details (§28 missing-detail resolution order):
+        1. Preserve the visible design language.
+        2. Preserve layout and spacing logic.
+        3. Preserve component family.
+        4. Preserve mood and polish level.
+        5. Only invent missing details when the analysis explicitly says
+           the source is ambiguous AND the open question was resolved.
+
+      Output:
+        - Complete files written to {{target_path}}, one section per file
+          (or per the {{framework}} convention), plus any shared
+          primitives in {{target_path}}/_components/.
+        - A short build report listing every file written and confirming
+          each banned-pattern check from output-discipline passed.
+        - No skipped sections. No "scaffold for the rest." If the output
+          would exceed the token budget, use the output-discipline pause
+          protocol and resume.
+    outputs:
+      - implementation_files
+      - build_report
