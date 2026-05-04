@@ -27,9 +27,9 @@ description: |
   projects in place.
 
 context:
-  target_path: "src"           # path to audit (relative to repo root)
-  archetype: ""                # optional — if set, also enforces archetype rules
-  scope: "full"                # "full" | "components" | "pages"
+  target_path: "src"
+  archetype: ""
+  scope: "all"   # one of: "critical" | "critical_warning" | "all" — set by approval gate or user input
 
 steps:
   - id: "scan"
@@ -81,31 +81,37 @@ steps:
     description: "User reviews audit before fixes are applied"
     prompt: |
       Audit complete. Review {{steps.diagnose.outputs.audit_path}} for:
-      - Are the violations real, or does your project intentionally allow
-        some of them? (Note any project-specific overrides.)
+      - Are the violations real, or does your project intentionally allow some?
       - Is the Fix Priority order acceptable?
-      - Should fixes be scoped to Critical only, or Critical+Warning, or all?
-
-      Approve to apply fixes, deny to revise the audit, or skip to keep
-      audit-only output.
+      - Reply with the desired scope:
+        - `critical` — fix only Critical violations
+        - `critical_warning` — fix Critical and Warning
+        - `all` — fix everything (Critical, Warning, Suggestion)
+      Approve to apply fixes (with the chosen scope), deny to revise the audit.
+    outputs:
+      scope: "{{_approval_message}}"   # capture user reply as scope override
 
   - id: "fix"
-    description: "Apply fixes per the audit's Fix Priority order"
+    description: "Apply fixes per the audit's Fix Priority order, scoped per user input"
     agent: "taste:component-designer"
     inputs:
       audit_path: "{{steps.diagnose.outputs.audit_path}}"
+      scope: "{{steps.approval-before-fix.outputs.scope | default(context.scope)}}"
     prompt_template: |
-      Apply fixes from {{audit_path}}. Follow the Fix Priority order
-      (Critical first, then Warning, then Suggestion). For each fix:
+      Apply fixes from {{audit_path}}, SCOPED to severity tier per user choice:
 
+      - If scope = "critical": Fix ONLY Critical violations. Skip Warning and Suggestion.
+      - If scope = "critical_warning": Fix Critical and Warning. Skip Suggestion.
+      - If scope = "all": Fix everything (Critical → Warning → Suggestion in order).
+
+      Active scope: {{scope}}
+
+      For each in-scope violation:
       1. Edit the cited file:line
-      2. Verify the fix doesn't break adjacent code (read 10 lines before/after)
-      3. If a fix requires a multi-file change (e.g., palette token swap),
-         apply the full set
-      4. After ALL Critical violations are fixed, generate a fix report at
-         .amplifier/redesign/fix-report.md noting what was changed
+      2. Verify the fix doesn't break adjacent code
+      3. If a fix requires multi-file changes (e.g., palette token swap), apply the full set
+      4. After all in-scope violations are fixed, generate fix-report.md noting what was changed AND what was skipped (with severity).
 
-      Output discipline: NO `// ...` placeholders. NO "for brevity" hedges.
-      Every fix is complete before moving to the next.
+      Output discipline: NO `// ...` placeholders. Every fix is complete before moving to the next.
     outputs:
       - fix_report_path

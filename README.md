@@ -104,6 +104,83 @@ bundle's instructions tell the model how to disambiguate based on keywords
 ("Notion-style" → minimalist, "Swiss design" → brutalist, "luxury" →
 soft-editorial, "GPT-strict" → gpt-taste).
 
+## Before / after — what the bundle actually changes
+
+A concrete example. Same prompt, same model, with and without the bundle.
+
+**Prompt:** *"Build a Next.js hero section with a headline, subheadline, and CTA button."*
+
+### Without taste bundle (typical LLM defaults)
+
+```tsx
+// hero.tsx
+export function Hero() {
+  return (
+    <section className="h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-blue-600">
+      <div className="max-w-4xl mx-auto text-center px-4">
+        <h1 className="text-5xl font-bold text-white mb-4 font-[Inter]">
+          Elevate Your Workflow
+        </h1>
+        <p className="text-xl text-white/80 mb-8">
+          Seamlessly integrate next-gen AI into your business with our cutting-edge platform.
+        </p>
+        <button className="bg-white text-purple-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100">
+          Get Started — It's Free
+        </button>
+      </div>
+    </section>
+  )
+}
+```
+
+**Counts of LLM tells:** centered hero (1), `h-screen` iOS-bug (1), purple→blue gradient (1), Inter font (1), "Elevate" cliché (1), "Seamlessly" cliché (1), "next-gen" cliché (1), `rounded-full` on CTA (1) = **8 banned patterns in one component**.
+
+### With `design-taste` + `minimalist-taste`
+
+```tsx
+// hero.tsx
+export function Hero() {
+  return (
+    <section className="min-h-[100dvh] grid grid-cols-12 gap-x-6 px-8 py-24 bg-[#FBFBFA]">
+      <div className="col-span-12 md:col-span-7 md:col-start-2 self-end">
+        <h1 className="font-[Cabinet_Grotesk] text-[clamp(3rem,7vw,6rem)] leading-[0.95] tracking-[-0.03em] text-[#111111] mb-6">
+          Notes that think with you.
+        </h1>
+        <p className="font-[Newsreader] text-xl leading-[1.4] text-[#2F3437] max-w-prose mb-10">
+          A document editor that reads alongside your work — pulling references, surfacing precedents, drafting passages on request. Ships next quarter.
+        </p>
+        <button className="px-5 py-2.5 bg-[#111111] text-[#FBFBFA] text-sm font-medium rounded-md hover:bg-[#2F3437] transition-colors">
+          Join the private beta
+        </button>
+      </div>
+    </section>
+  )
+}
+```
+
+**What changed:**
+- `min-h-[100dvh]` not `h-screen` (iOS Safari viewport bug)
+- Asymmetric 12-column grid, not centered
+- Cabinet Grotesk + Newsreader (editorial pairing) instead of Inter
+- Off-black `#111111` instead of `#000000`, off-white `#FBFBFA` background
+- Concrete copy ("Notes that think with you", "ships next quarter") instead of "Elevate Your Workflow"
+- `rounded-md` not `rounded-full` on the CTA
+- Single-color treatment, no gradient
+
+The bundle didn't add new code paths or libraries — it shifted the model's defaults. Same prompt, same complexity, completely different output quality.
+
+## Migrating from upstream `taste-skill`
+
+If you're already using [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) directly via `npx skills add` and want to switch to this Amplifier-native version, the mappings are:
+
+- **Skill names** — upstream `taste-skill` → bundle `design-taste`; `gpt-tasteskill` → `gpt-taste`; `minimalist-skill` → `minimalist-taste`; `brutalist-skill` → `brutalist-taste`; `soft-skill` → `soft-editorial-taste`; `redesign-skill` → `redesign-existing-projects`; `output-skill` → `output-discipline` (now mounted as a behavior, auto-loads on session start).
+- **`image-to-code-skill` is now a recipe**, not a skill (`recipes/image-to-code.yaml`). The 1228-line upstream skill is split into 3 stages (generate references → analyze → implement) with an approval gate. Run via `amplifier recipe run taste:recipes/image-to-code`.
+- **`stitch-skill` is replaced** with the format-neutral `design-context-generator` skill — generates a generic `DESIGN.md` consumable by any AI session, not Stitch's proprietary semantic-design-language format.
+- **Parametric dials** (`DESIGN_VARIANCE`, `MOTION_INTENSITY`, `VISUAL_DENSITY`) are unchanged in semantics. They live in `context/dials.md` and are referenced by skills via @-mention.
+- **The Python `random.choice()` theater** in upstream `gpt-tasteskill` is replaced by the explicit anti-default rule in `context/design-variations.md` — "Choose a combination not used in your immediately prior output. Do not default to the first option." The model doesn't actually execute Python.
+
+For substantive design-rule changes (a ban is wrong, a dial threshold is off), file at the [upstream repo](https://github.com/Leonxlnx/taste-skill/issues) — we re-port after the original author accepts. For Amplifier-specific bugs (recipe wiring, frontmatter, behavior YAML), file [here](https://github.com/michaeljabbour/amplifier-bundle-taste/issues).
+
 ## What's inside
 
 | Path | What it provides |
@@ -123,6 +200,8 @@ soft-editorial, "GPT-strict" → gpt-taste).
 | `context/design-variations.md` | Combinatorial variation menus |
 | `context/output-discipline-research.md` | Distilled research backing for output-discipline |
 | `recipes/image-to-code.yaml` | 3-stage image-first workflow: generate references → analyze → implement |
+| `recipes/redesign-audit.yaml` | 4-stage audit-then-fix workflow with approval gate (scan → diagnose → approval → fix). Operationalizes the redesign-existing-projects skill. |
+| `recipes/design-system-bootstrap.yaml` | 3-stage onboarding: interview → archetype-pick (approval gate) → DESIGN.md authoring. Use once per new project. |
 
 ## Recommended usage
 

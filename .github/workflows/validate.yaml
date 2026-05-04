@@ -1,0 +1,106 @@
+name: Validate bundle
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate-yaml:
+    name: Validate YAML files parse
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Validate every YAML file parses
+        run: |
+          python3 - <<'PY'
+          import yaml, glob, sys
+          errors = 0
+          for f in sorted(glob.glob("behaviors/*.yaml") + glob.glob("recipes/*.yaml") + glob.glob(".github/**/*.yaml", recursive=True)):
+              try:
+                  list(yaml.safe_load_all(open(f)))
+                  print(f"OK   {f}")
+              except yaml.YAMLError as e:
+                  print(f"FAIL {f}: {e}")
+                  errors += 1
+          sys.exit(errors)
+          PY
+
+  validate-frontmatter:
+    name: Validate skill and agent frontmatter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: All skills must have name + description in frontmatter
+        run: |
+          python3 - <<'PY'
+          import yaml, glob, sys
+          errors = 0
+          for f in sorted(glob.glob("skills/*.md")):
+              try:
+                  parts = open(f).read().split("---", 2)
+                  if len(parts) < 3:
+                      print(f"FAIL {f}: no frontmatter")
+                      errors += 1
+                      continue
+                  fm = yaml.safe_load(parts[1])
+                  if "name" not in fm or "description" not in fm:
+                      print(f"FAIL {f}: missing name or description")
+                      errors += 1
+                  else:
+                      print(f"OK   {f}")
+              except Exception as e:
+                  print(f"FAIL {f}: {e}")
+                  errors += 1
+          for f in sorted(glob.glob("agents/*.md")):
+              try:
+                  parts = open(f).read().split("---", 2)
+                  fm = yaml.safe_load(parts[1])
+                  meta = fm.get("meta", {})
+                  if not meta.get("name") or not meta.get("description"):
+                      print(f"FAIL {f}: missing meta.name or meta.description")
+                      errors += 1
+                  else:
+                      print(f"OK   {f}")
+              except Exception as e:
+                  print(f"FAIL {f}: {e}")
+                  errors += 1
+          sys.exit(errors)
+          PY
+
+  validate-cross-references:
+    name: Validate @taste cross-references resolve
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Every @taste:... reference must resolve to an existing file
+        run: |
+          set -e
+          missing=0
+          while IFS= read -r ref; do
+            path="${ref#@taste:}"
+            if [[ ! -f "$path" ]]; then
+              echo "MISSING  $ref  (expected at: $path)"
+              missing=$((missing + 1))
+            fi
+          done < <(grep -rho '@taste:[a-zA-Z0-9/_-]*\.\(md\|yaml\)' --include="*.md" --include="*.yaml" . | sort -u)
+          echo "Missing: $missing"
+          exit $missing
+
+  check-tells-self:
+    name: Self-check — bundle source files don't violate own bans
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run check-tells against bundle's own .md files (informational — never fails)
+        run: |
+          chmod +x scripts/check-tells.sh
+          # The bundle's own .md files describe banned patterns, so they will
+          # match the patterns by definition. This run is informational only.
+          ./scripts/check-tells.sh --severity=warning skills/ context/ || true

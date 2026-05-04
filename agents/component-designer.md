@@ -60,7 +60,7 @@ defaults are dangerous; respect the choices the brief has already made.
 6. **Apply output-discipline.** No `// ...` placeholders. No "for
    brevity, omitting…" hedges. No truncated returns. If a section
    is genuinely too long for one turn, use the pause protocol from
-   `@taste:context/instructions.md` — emit a clean checkpoint, then
+   `@taste:skills/output-discipline.md` — emit a clean checkpoint, then
    continue in the next turn.
 
 ## Important Rules

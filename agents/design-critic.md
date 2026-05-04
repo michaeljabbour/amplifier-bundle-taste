@@ -74,8 +74,7 @@ position. Examples:
   contradiction.
 - Low `MOTION_INTENSITY` dial + a `useScroll` + parallax transform on
   every section = contradiction.
-- Low `TYPOGRAPHIC_CONTRAST` dial + a 96px-vs-14px hero pairing =
-  contradiction.
+- High `DESIGN_VARIANCE` dial (>4) + a centered hero section = contradiction (DESIGN_VARIANCE>4 bans centered heroes per `@taste:context/dials.md`).
 
 If the project does not specify dial positions, infer the intended
 positions from the archetype skill (if provided) or note "dial

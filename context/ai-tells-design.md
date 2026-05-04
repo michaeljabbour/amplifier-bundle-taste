@@ -1,6 +1,6 @@
 # AI Tells — Merged Hard-Ban Reference
 
-A consolidated, scannable list of forbidden patterns merged across the six design archetype skills in this bundle: `taste-skill` (base), `gpt-tasteskill`, `minimalist-skill`, `brutalist-skill`, `soft-skill`, and `redesign-skill`.
+A consolidated, scannable list of forbidden patterns merged across the six design archetype skills in this bundle: `design-taste` (base), `gpt-taste`, `minimalist-taste`, `brutalist-taste`, `soft-editorial-taste`, and `redesign-existing-projects`.
 
 Every ban below is **testable in 5 seconds** by visual inspection of the rendered page or grep over the source. No vibes — only checkable rules.
 
@@ -11,7 +11,7 @@ Every ban below is **testable in 5 seconds** by visual inspection of the rendere
 These hold regardless of which archetype overlay is active.
 
 ### Typography
-- **Inter font** — banned everywhere. Use `Geist`, `Outfit`, `Cabinet Grotesk`, or `Satoshi`. (5-sec test: grep `font-family.*Inter`.)
+- **Inter font — banned as body/UI default.** Use `Geist`, `Outfit`, `Cabinet Grotesk`, or `Satoshi` instead. **Exception:** the `brutalist-taste` archetype may use `Inter` at Black/ExtraBold weight ONLY for macro-typography (e.g., `clamp(4rem, 10vw, 15rem)` headlines) — never for body or UI. (5-sec test: grep `font-family.*Inter` then check weight; flag any non-Black usage.)
 - **Roboto, Open Sans, Helvetica, Arial as primary** — same rationale.
 - **Title Case On Every Header** — use sentence case.
 
@@ -62,7 +62,7 @@ These hold regardless of which archetype overlay is active.
 
 These are banned by SOME archetypes and may be allowed (or even required) in others. Note the enforcing archetype.
 
-### Banned by `minimalist-skill` (allowed elsewhere)
+### Banned by `minimalist-taste` (allowed elsewhere)
 - **Gradients of any kind** (minimalist forbids them; soft-skill and brutalist may use radial mesh sparingly).
 - **Tailwind heavy drop shadows** (`shadow-md`, `shadow-lg`, `shadow-xl`) — minimalist requires shadow opacity < 0.05; soft-skill *requires* highly diffused ambient shadows.
 - **`rounded-full` for large containers / cards / primary buttons** — minimalist forbids; soft-skill *requires* it for nav pills and CTAs.
@@ -71,21 +71,21 @@ These are banned by SOME archetypes and may be allowed (or even required) in oth
 - **Primary colored backgrounds for large sections** (bright blue/green/red heroes).
 - **Neon colors**.
 
-### Banned by `brutalist-skill` (allowed elsewhere)
+### Banned by `brutalist-taste` (allowed elsewhere)
 - **`border-radius`** — brutalist requires exactly 90° corners everywhere.
 - **Gradients, soft drop shadows, modern translucency** — banned in brutalist.
 - **Mixing Swiss Industrial (light) and Tactical Telemetry (dark) substrates** in the same interface.
 - **Serif fonts in dashboards** — brutalist allows serifs *only* sparingly with halftone post-processing; taste-skill bans Serif on dashboards entirely.
 - **Mixed-case structural headers** — brutalist requires exclusively uppercase.
 
-### Banned by `soft-skill` (allowed elsewhere)
+### Banned by `soft-editorial-taste` (allowed elsewhere)
 - **Standard thick-stroked Lucide / FontAwesome / Material Icons** — soft requires ultra-light lines (Phosphor Light, Remix Line).
 - **Generic 1px solid gray borders** — soft requires the "Doppelrand" double-bezel nested architecture.
 - **Edge-to-edge sticky navbars glued to the top** — soft requires a floating glass pill detached with `mt-6`.
 - **Symmetrical 3-column Bootstrap-style grids without massive whitespace gaps**.
 - **Trailing arrow icons sitting naked next to button text** — soft requires the "button-in-button" nested circular wrapper.
 
-### Banned by `gpt-tasteskill` (allowed elsewhere)
+### Banned by `gpt-taste` (allowed elsewhere)
 - **Cheap meta-labels**: "SECTION 01", "SECTION 04", "QUESTION 05", "ABOUT US" — banned forever in gpt-taste.
 - **6-line wrapped hero headlines** — hero H1 must NEVER exceed 2–3 lines (gpt-taste enforces; others recommend).
 - **Empty cells in CSS Grid** — gpt-taste mandates `grid-flow-dense` and mathematical interlock.
@@ -94,7 +94,7 @@ These are banned by SOME archetypes and may be allowed (or even required) in oth
 - **Raw data/stats in the hero**.
 - **Invisible button text** (dark text on dark background) — universal in spirit, gpt-taste makes it an explicit pre-flight check.
 
-### Banned by `taste-skill` base (allowed in some overlays)
+### Banned by `design-taste` base (allowed in some overlays)
 - **Centered Hero/H1** when `DESIGN_VARIANCE > 4` — base skill bans; minimalist may center heroes at low variance.
 - **Card containers** when `VISUAL_DENSITY > 7` — base skill bans; replace with `border-t`, `divide-y`, or pure spacing.
 - **Custom mouse cursors**.
@@ -102,7 +102,7 @@ These are banned by SOME archetypes and may be allowed (or even required) in oth
 - **Default `box-shadow` glows / auto-glows** — use inner borders or tinted shadows.
 - **Oversized H1s** that "scream" — control hierarchy with weight and color, not scale alone.
 
-### Banned by `redesign-skill` (audit list, project-dependent)
+### Banned by `redesign-existing-projects` (audit list, project-dependent)
 - **`height: 100vh`** — replace with `min-height: 100dvh`.
 - **Buttons not bottom-aligned in card groups** when content lengths vary.
 - **Feature lists starting at different vertical positions** in pricing tables.
