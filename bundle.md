@@ -1,11 +1,11 @@
 ---
 bundle:
-  name: taste-skill
+  name: taste
   version: 0.1.0
   description: Anti-slop frontend design taste — ported from Leonxlnx/taste-skill. Provides a base design-taste skill, four mutually-exclusive aesthetic archetype overlays (minimalist, brutalist, soft-editorial, gpt-strict), an audit-then-fix redesign skill, a generic design-context-generator, an always-on output-discipline behavior preventing placeholder truncation, and an image-to-code recipe for image-first design-to-code workflows.
 ---
 
-# taste-skill bundle
+# taste bundle
 
 Anti-slop frontend design discipline for Amplifier. Adapted from
 [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) — a curated
@@ -38,7 +38,7 @@ placeholder code) with testable, opinionated bans and parametric controls.
 ```yaml
 # Project bundle that wants minimalist frontend design + universal output discipline
 includes:
-  - bundle: taste-skill:behaviors/output-discipline   # always-on
+  - bundle: taste:behaviors/output-discipline   # always-on
   # Skills auto-discovered from skills/ — pick one archetype at invocation time
 ```
 

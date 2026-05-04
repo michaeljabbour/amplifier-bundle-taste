@@ -14,7 +14,7 @@ This skill generates that document. The output is plain Markdown — no propriet
 ## When to Use
 - Starting a new project and you want all future UI work to share one design spec.
 - Consolidating an existing project whose design language is implicit (scattered across components, never written down).
-- **Before invoking taste-skill archetypes** (`minimalist-taste`, `brutalist-taste`, `soft-editorial-taste`). The seed doc lets all subsequent sessions agree on the dial values, palette, and component conventions the archetype is being applied to. Archetype + seed = reproducible output.
+- **Before invoking taste archetypes** (`minimalist-taste`, `brutalist-taste`, `soft-editorial-taste`). The seed doc lets all subsequent sessions agree on the dial values, palette, and component conventions the archetype is being applied to. Archetype + seed = reproducible output.
 - After a significant design pivot, to re-baseline what "the design language" now is.
 
 ## What to Generate

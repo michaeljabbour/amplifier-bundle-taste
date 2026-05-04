@@ -7,7 +7,7 @@ model_role: ui-coding
 # Minimalist Taste — Premium Utilitarian Editorial UI
 
 ## Composition
-Compose with `@taste-skill:skills/design-taste.md` as the base. Archetype rules in this skill OVERRIDE conflicting rules in the base via Amplifier merge order.
+Compose with `@taste:skills/design-taste.md` as the base. Archetype rules in this skill OVERRIDE conflicting rules in the base via Amplifier merge order.
 
 ## 1. Protocol Overview
 Name: Premium Utilitarian Minimalism & Editorial UI

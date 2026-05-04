@@ -7,7 +7,7 @@ model_role: ui-coding
 # Brutalist Taste — Industrial Brutalism & Tactical Telemetry UI
 
 ## Composition
-Compose with `@taste-skill:skills/design-taste.md` as the base. Archetype rules in this skill OVERRIDE conflicting rules in the base via Amplifier merge order.
+Compose with `@taste:skills/design-taste.md` as the base. Archetype rules in this skill OVERRIDE conflicting rules in the base via Amplifier merge order.
 
 ## 1. Skill Meta
 **Name:** Industrial Brutalism & Tactical Telemetry Interface Engineering

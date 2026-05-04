@@ -45,7 +45,7 @@ amplifier bundle add git+https://github.com/michaeljabbour/amplifier-bundle-tast
 amplifier bundle add git+https://github.com/michaeljabbour/amplifier-bundle-taste@v0.1.0
 
 # Verify it loaded
-amplifier bundle list | grep taste-skill
+amplifier bundle list | grep taste
 ```
 
 ### Use it as an active app bundle
@@ -54,10 +54,10 @@ Once added, you can either compose it into your own bundle, or run Amplifier dir
 
 ```bash
 # Run an interactive session with this bundle mounted
-amplifier --bundle taste-skill
+amplifier --bundle taste
 
 # Or one-off prompts
-amplifier --bundle taste-skill run "Build a minimalist landing page hero in Next.js"
+amplifier --bundle taste run "Build a minimalist landing page hero in Next.js"
 ```
 
 ### Compose into your own bundle
@@ -66,7 +66,7 @@ In your project's `bundle.md`:
 
 ```yaml
 includes:
-  - bundle: taste-skill:behaviors/output-discipline   # always-on completeness
+  - bundle: taste:behaviors/output-discipline   # always-on completeness
   # Skills auto-discover from skills/ — pick an archetype at invocation time
 ```
 

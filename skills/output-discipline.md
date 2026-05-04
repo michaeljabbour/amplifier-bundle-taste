@@ -95,4 +95,4 @@ Before finalizing any response, verify:
 
 ## Cross-references
 
-Empirical motivation for this skill — RLHF brevity bias, training-data placeholder propagation, cognitive shortcuts on long tasks, and remediation techniques that work — is summarized in `@taste-skill:context/output-discipline-research.md`.
+Empirical motivation for this skill — RLHF brevity bias, training-data placeholder propagation, cognitive shortcuts on long tasks, and remediation techniques that work — is summarized in `@taste:context/output-discipline-research.md`.

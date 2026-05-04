@@ -14,9 +14,9 @@ When composed, archetype overlays override conflicting rules from this base (Amp
 
 Cross-references for deeper context:
 
-- `@taste-skill:context/dials.md` — full DESIGN_VARIANCE / MOTION_INTENSITY / VISUAL_DENSITY definitions
-- `@taste-skill:context/ai-tells-design.md` — extended ban list of generic AI design fingerprints
-- `@taste-skill:context/bento-2.md` — the Motion-Engine Bento 2.0 paradigm and 5-card archetypes
+- `@taste:context/dials.md` — full DESIGN_VARIANCE / MOTION_INTENSITY / VISUAL_DENSITY definitions
+- `@taste:context/ai-tells-design.md` — extended ban list of generic AI design fingerprints
+- `@taste:context/bento-2.md` — the Motion-Engine Bento 2.0 paradigm and 5-card archetypes
 
 ## 1. ACTIVE BASELINE CONFIGURATION
 * DESIGN_VARIANCE: 8 (1=Perfect Symmetry, 10=Artsy Chaos)

@@ -23,7 +23,7 @@ bundle:
 # Primary mechanism: auto-load the skill on session start.
 skills:
   auto_load:
-    - taste-skill:skills/output-discipline
+    - taste:skills/output-discipline
 
 # Fallback mechanism: if the harness does not honor `skills.auto_load`, inject
 # the skill body directly into the session system context. Either path yields
@@ -31,6 +31,6 @@ skills:
 # the structured `auto_load` and no-op the inject.
 context:
   inject:
-    - source: taste-skill:skills/output-discipline.md
+    - source: taste:skills/output-discipline.md
       scope: session
       position: prepend

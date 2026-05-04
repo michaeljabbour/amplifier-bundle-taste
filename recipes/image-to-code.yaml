@@ -70,10 +70,10 @@ steps:
       - This is one section, one image. Do NOT pack multiple sections into
         one board. Make the section large, readable, and analyzable.
       - Pick ONE coherent visual combination from
-        @taste-skill:context/design-variations.md and reuse it across every
+        @taste:context/design-variations.md and reuse it across every
         section in this run. Do not default to the first option in any list.
       - Apply the {{archetype}} archetype overlay
-        (@taste-skill:skills/{{archetype}}-taste.md) for palette, typography,
+        (@taste:skills/{{archetype}}-taste.md) for palette, typography,
         and component family.
       - For the hero section: 1–3 line headline maximum, clean composition,
         no fake stats / pills / pseudo-system labels.
@@ -180,15 +180,15 @@ steps:
       {{reference_image_paths}}.
 
       Skill composition:
-        - Base: @taste-skill:skills/design-taste.md (3 dials,
+        - Base: @taste:skills/design-taste.md (3 dials,
           interactivity isolation, performance guardrails).
-        - Archetype overlay: @taste-skill:skills/{{archetype}}-taste.md.
+        - Archetype overlay: @taste:skills/{{archetype}}-taste.md.
         - Behavior mounted: output-discipline — no `// ...`, no
           "for brevity", no "rest of code" elisions. Follow the
           scope-build-cross-check protocol from
-          @taste-skill:skills/output-discipline.md.
-        - Reference: @taste-skill:context/ai-tells-design.md for the
-          merged ban list and @taste-skill:context/dials.md for threshold
+          @taste:skills/output-discipline.md.
+        - Reference: @taste:context/ai-tells-design.md for the
+          merged ban list and @taste:context/dials.md for threshold
           rules.
 
       Anti-drift rules (image-to-code-skill §26, §27):
