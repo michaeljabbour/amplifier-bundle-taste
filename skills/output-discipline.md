@@ -1,7 +1,6 @@
 ---
 name: output-discipline
 description: Use when generating any code, configuration, or long-form artifact and risking truncation, placeholder elision, or "for brevity" hedges. Auto-loads when this bundle is mounted to enforce complete output across every task — no `// ...`, no `// rest of code`, no fake `// TODO` in committed code, and a defined pause/resume protocol when output is genuinely token-limited.
-auto-load: true
 ---
 
 # Output Discipline

@@ -3,6 +3,24 @@
 # 3-stage image-first design-to-code workflow, derived from the
 # `image-to-code-skill` (1228 lines) in the source taste-skill repo.
 #
+# Workflow:
+#   Stage 1 — generate-references: Generate N section reference images via
+#              imagegen MCP. One image per section, committed to
+#              .amplifier/image-to-code/.
+#   Stage 2 — analyze-design:      Systematic visual analysis of every image
+#              (§8–§29) → structured Markdown doc with typography, spacing,
+#              palette, component conventions, and anti-drift flags.
+#   Approval gate: user reviews design analysis before any code is written.
+#   Stage 3 — implement-code:      Faithful frontend implementation driven
+#              by the analysis doc and reference images.
+#
+# Dependencies (not enforced by the recipe engine — document here for ops):
+#   mcp_servers:  imagegen   (required for stage 1 image generation)
+#   bundle:       taste      (this bundle — component-designer agent,
+#                             archetype skills, context files)
+#   skills used:  taste:design-taste, taste:{{archetype}}-taste,
+#                 taste:output-discipline
+#
 # Why this is a recipe and not a skill:
 # The image-to-code workflow is inherently sequential — references must exist
 # before analysis can run, and analysis must exist before implementation.
@@ -58,20 +76,26 @@ steps:
       Use the imagegen MCP. Commit to ONE coherent visual combination from
       the design-variations menu before generating the first image; reuse the
       same combination across all {{n_sections}} images.
-    tool: "imagegen.generate_image"
-    iterate:
-      over: "section_pack({{n_sections}})"
-      as: "section"
     prompt_template: |
-      Generate ONE reference image for the "{{section.name}}" section of a
-      website matching this brief: {{brief}}.
+      Generate {{n_sections}} reference images for a {{archetype}}-aesthetic
+      page. Each image is one section in vertical sequence.
+
+      Brief: {{brief}}
+
+      Section types to cover (in order, exactly {{n_sections}}):
+      1. Hero (always)
+      2. Feature/value proposition
+      3. Social proof or product showcase
+      4. Pricing or CTA
+      (Omit later items if n_sections < 4. Stop at n_sections.)
 
       Constraints (from image-to-code-skill §2, §3, §4, §14, §16, §17):
-      - This is one section, one image. Do NOT pack multiple sections into
-        one board. Make the section large, readable, and analyzable.
-      - Pick ONE coherent visual combination from
-        @taste:context/design-variations.md and reuse it across every
-        section in this run. Do not default to the first option in any list.
+      - One section per image. Do NOT pack multiple sections into one board.
+        Make each section large, readable, and analyzable.
+      - Before generating the first image, commit to ONE coherent visual
+        combination from @taste:context/design-variations.md and reuse it
+        across every section in this run. Do not default to the first option
+        in any list (anti-default rule).
       - Apply the {{archetype}} archetype overlay
         (@taste:skills/{{archetype}}-taste.md) for palette, typography,
         and component family.
@@ -82,8 +106,11 @@ steps:
       - Use placeholder image sources that are picsum.photos or generated;
         never broken Unsplash links.
 
-      Output: a single high-resolution image saved to
-      .amplifier/image-to-code/{{n_sections}}/{{section.index}}-{{section.name}}.png
+      For each section N (1 through {{n_sections}}):
+      - Generate one image at 1024x1536 (portrait)
+      - Save to .amplifier/image-to-code/{{n_sections}}/{{N}}-<section-name>.png
+
+      Output a list of all generated image paths once complete.
     outputs:
       - reference_image_paths
 
@@ -100,7 +127,7 @@ steps:
       Systematic, structured deep analysis of every generated reference
       image. Extract typography stack, spacing scale, color palette,
       component conventions. Flag any anti-drift risks before implementation.
-    agent: "design-intelligence:component-designer"
+    agent: "taste:component-designer"
     inputs:
       reference_image_paths: "{{steps.generate-references.outputs.reference_image_paths}}"
     prompt_template: |
@@ -156,12 +183,24 @@ steps:
     outputs:
       - design_analysis_path
 
-    # Phase-gate: if analysis flags unresolved ambiguity, the recipe halts
-    # for a regenerate-or-decide loop. The user resolves or asks step 1 to
-    # regenerate the named sections as fresh standalone detail images
-    # before step 3 runs.
-    requires_human_review_if:
-      - "design_analysis.open_questions.length > 0"
+  - id: "approval-gate-before-implementation"
+    type: "approval"
+    description: "Review the design analysis before implementing code"
+    prompt: |
+      Design analysis is complete. Review
+      {{steps.analyze-design.outputs.design_analysis_path}} for completeness
+      and accuracy before code generation begins.
+
+      Check:
+      - Are all §8–§9 per-section findings present?
+      - Is the consolidated color palette specific (hex values, not vague
+        descriptors)?
+      - Are anti-drift flags clearly stated?
+      - Are there any Open questions that were NOT resolved? If so, deny
+        and ask step 2 to regenerate the named sections as fresh standalone
+        detail images first.
+
+      Approve to proceed with implementation, or deny to revise the analysis.
 
   - id: "implement-code"
     description: >-
@@ -169,7 +208,7 @@ steps:
       design analysis. Apply anti-drift rules. Compose design-taste base +
       {{archetype}} archetype overlay. Output-discipline behavior is mounted,
       so produce complete code with no `// ...` placeholders.
-    agent: "design-intelligence:component-designer"
+    agent: "taste:component-designer"
     inputs:
       design_analysis_path: "{{steps.analyze-design.outputs.design_analysis_path}}"
       reference_image_paths: "{{steps.generate-references.outputs.reference_image_paths}}"

@@ -1,0 +1,111 @@
+# recipes/redesign-audit.yaml
+#
+# Audit-then-fix workflow for upgrading an existing frontend project's
+# design quality. Three stages with a mandatory approval gate between
+# audit and fix so the user reviews the plan before any code changes.
+#
+# Workflow:
+#   Stage 1 — scan:    Read codebase, identify framework/styling baseline,
+#              write .amplifier/redesign/baseline.md.
+#   Stage 2 — diagnose: Apply ban list + dial thresholds against all files in
+#              target_path, write .amplifier/redesign/audit.md with Critical /
+#              Warning / Suggestion tiers and a Fix Priority section.
+#   Approval gate: user reviews audit.md, scopes the fix, and confirms the
+#              Fix Priority order before any code is touched.
+#   Stage 3 — fix:     Apply fixes per priority order, write fix-report.md.
+#
+# Dependencies (not enforced by the recipe engine — document here for ops):
+#   bundle: taste  (design-critic and component-designer agents,
+#                   redesign-existing-projects skill, context files)
+#   skills used: taste:redesign-existing-projects, taste:output-discipline
+
+name: "redesign-audit"
+description: |
+  Audit an existing frontend codebase against the taste bundle's ban list
+  and parametric dial thresholds, then apply targeted fixes after user
+  approval. Does NOT migrate frameworks. Designed for upgrading existing
+  projects in place.
+
+context:
+  target_path: "src"           # path to audit (relative to repo root)
+  archetype: ""                # optional — if set, also enforces archetype rules
+  scope: "full"                # "full" | "components" | "pages"
+
+steps:
+  - id: "scan"
+    description: "Read codebase and identify framework/styling/design baseline"
+    agent: "taste:design-critic"
+    prompt_template: |
+      You are scanning {{target_path}} for a redesign. Phase 1 (Scan) of
+      @taste:skills/redesign-existing-projects.md.
+
+      Read in this order:
+      1. package.json (identify React/Vue/Svelte/Next/etc.)
+      2. Tailwind/styled-components config (identify styling baseline)
+      3. globals.css or root stylesheet (identify CSS variables, base typography)
+      4. 3 representative components from {{target_path}} (one hero, one form,
+         one data display)
+      5. The root layout if it exists (app/layout.tsx, src/App.vue, etc.)
+
+      Produce a "design baseline report" at .amplifier/redesign/baseline.md
+      describing the current state — framework, styling method, typography
+      baseline, color palette in use, identified component patterns.
+    outputs:
+      - baseline_path
+
+  - id: "diagnose"
+    description: "Audit against ban list and produce structured violation report"
+    agent: "taste:design-critic"
+    inputs:
+      baseline_path: "{{steps.scan.outputs.baseline_path}}"
+    prompt_template: |
+      You have the baseline report at {{baseline_path}}. Now run Phase 2
+      (Diagnose) of @taste:skills/redesign-existing-projects.md.
+
+      Apply the full ban list from @taste:context/ai-tells-design.md to all
+      files in {{target_path}}. Apply dial threshold checks from
+      @taste:context/dials.md. If {{archetype}} is set, also apply that
+      archetype's specific rules from @taste:skills/{{archetype}}-taste.md.
+
+      Output a structured violation report at .amplifier/redesign/audit.md
+      with the format from your agent persona — Critical / Warning /
+      Suggestion tiers, file:line citations, source-rule citations.
+
+      ALSO output a Fix Priority section at the end with the recommended
+      order to apply fixes (max impact / min risk first).
+    outputs:
+      - audit_path
+
+  - id: "approval-before-fix"
+    type: "approval"
+    description: "User reviews audit before fixes are applied"
+    prompt: |
+      Audit complete. Review {{steps.diagnose.outputs.audit_path}} for:
+      - Are the violations real, or does your project intentionally allow
+        some of them? (Note any project-specific overrides.)
+      - Is the Fix Priority order acceptable?
+      - Should fixes be scoped to Critical only, or Critical+Warning, or all?
+
+      Approve to apply fixes, deny to revise the audit, or skip to keep
+      audit-only output.
+
+  - id: "fix"
+    description: "Apply fixes per the audit's Fix Priority order"
+    agent: "taste:component-designer"
+    inputs:
+      audit_path: "{{steps.diagnose.outputs.audit_path}}"
+    prompt_template: |
+      Apply fixes from {{audit_path}}. Follow the Fix Priority order
+      (Critical first, then Warning, then Suggestion). For each fix:
+
+      1. Edit the cited file:line
+      2. Verify the fix doesn't break adjacent code (read 10 lines before/after)
+      3. If a fix requires a multi-file change (e.g., palette token swap),
+         apply the full set
+      4. After ALL Critical violations are fixed, generate a fix report at
+         .amplifier/redesign/fix-report.md noting what was changed
+
+      Output discipline: NO `// ...` placeholders. NO "for brevity" hedges.
+      Every fix is complete before moving to the next.
+    outputs:
+      - fix_report_path

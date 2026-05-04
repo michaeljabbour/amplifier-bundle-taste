@@ -1,0 +1,99 @@
+# recipes/design-system-bootstrap.yaml
+#
+# Bootstrap a project's design system: interview user, pick an archetype
+# (with explicit approval gate), and write a DESIGN.md reference document
+# that subsequent AI sessions can @-mention. One-time setup per project.
+#
+# Workflow:
+#   Stage 1 — interview-and-recommend: Interview user (or use provided
+#              project_description), recommend one archetype with reasoning,
+#              write .amplifier/design-system/recommendation.md.
+#   Approval gate: user confirms the archetype before DESIGN.md is written.
+#              User may also override with a specific archetype name.
+#   Stage 2 — write-design-md: Author DESIGN.md with concrete palette,
+#              typography, spacing scale, component conventions, and per-project
+#              anti-patterns for the chosen archetype.
+#
+# Dependencies (not enforced by the recipe engine — document here for ops):
+#   bundle: taste  (component-designer agent, design-context-generator skill,
+#                   archetype skills, context files)
+#   skills used: taste:design-context-generator, taste:design-taste
+
+name: "design-system-bootstrap"
+description: |
+  Interview the user about a new project, recommend an aesthetic archetype,
+  get explicit approval, then write a DESIGN.md design system reference doc
+  that subsequent AI sessions @-mention to ground all UI work.
+
+context:
+  output_path: "DESIGN.md"     # or ".amplifier/AGENT_DESIGN.md" for project-private
+  project_description: ""      # optional — if empty, recipe will interview
+
+steps:
+  - id: "interview-and-recommend"
+    description: "Interview user, gather project context, recommend an archetype"
+    agent: "taste:component-designer"
+    prompt_template: |
+      You're helping the user bootstrap a design system for a new project.
+
+      If {{project_description}} is empty, ask the user:
+      1. What's the product? (B2B SaaS, consumer mobile, agency portfolio,
+         dev tool, e-commerce, internal dashboard, etc.)
+      2. Who's the audience? (Engineers? Executives? Designers? Consumers?)
+      3. What's the brand personality? (Professional, playful, premium,
+         technical, minimal, bold?)
+      4. Are there reference brands you admire? (Notion, Linear, Anthropic,
+         Vercel, Stripe, Apple, etc. — gives you keyword cues)
+      5. Any constraints? (Must work on mobile, must be accessible to
+         screen readers, must support dark mode, etc.)
+
+      Based on the answers (or {{project_description}} if provided), recommend
+      exactly one archetype:
+      - minimalist (Notion / Linear / editorial / document-editor)
+      - brutalist (Swiss / industrial / terminal / monospace-heavy)
+      - soft-editorial (luxury / agency / glass / premium / fashion-tech)
+      - gpt (GPT-strict / Codex / GSAP-heavy landing pages)
+
+      Output a brief recommendation document at
+      .amplifier/design-system/recommendation.md citing your reasoning.
+    outputs:
+      - recommendation_path
+
+  - id: "approve-archetype"
+    type: "approval"
+    description: "User confirms archetype choice before DESIGN.md is written"
+    prompt: |
+      Read {{steps.interview-and-recommend.outputs.recommendation_path}}.
+
+      Approve the recommended archetype to write DESIGN.md, deny to revise
+      the recommendation, or override by replying with a specific archetype
+      name (minimalist | brutalist | soft-editorial | gpt).
+
+  - id: "write-design-md"
+    description: "Author DESIGN.md with concrete values for the chosen archetype"
+    agent: "taste:component-designer"
+    inputs:
+      recommendation_path: "{{steps.interview-and-recommend.outputs.recommendation_path}}"
+    prompt_template: |
+      Write {{output_path}} per the protocol in
+      @taste:skills/design-context-generator.md.
+
+      Use the chosen archetype from {{recommendation_path}} (or the user's
+      override if one was provided at the approval gate). Include the
+      archetype's specific values:
+      - Palette: hex codes from the archetype's specification
+      - Typography: full font stack with weights and scale
+      - Spacing scale: rem values
+      - Component conventions: button states, form patterns, surface treatments
+      - Motion philosophy: Framer Motion physics defaults
+      - Anti-patterns: project-specific bans (in addition to the universal
+        bans in @taste:context/ai-tells-design.md)
+
+      The doc must be self-contained — anyone reading it should be able to
+      generate UI without also loading the archetype skill. It's the project's
+      pinned design language.
+
+      Output discipline: NO vague descriptors. Every value is concrete (hex,
+      px, rem, ms). NO "// ..." or "etc." placeholders.
+    outputs:
+      - design_md_path

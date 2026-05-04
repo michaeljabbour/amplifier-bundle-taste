@@ -67,8 +67,12 @@ In your project's `bundle.md`:
 ```yaml
 includes:
   - bundle: taste:behaviors/output-discipline   # always-on completeness
-  # Skills auto-discover from skills/ — pick an archetype at invocation time
 ```
+
+Skills register with `tool-skills` automatically and are loadable on demand
+via `load_skill`. The model can invoke them based on description matching —
+pick an archetype at invocation time rather than hard-wiring it into the
+bundle.
 
 ### Install for development (editable, from local clone)
 
@@ -76,6 +80,29 @@ includes:
 git clone https://github.com/michaeljabbour/amplifier-bundle-taste.git ~/dev/amplifier-bundle-taste
 amplifier bundle add file://$HOME/dev/amplifier-bundle-taste
 ```
+
+## Quickstart — your first session
+
+After installing, mount the bundle and try one of these:
+
+```bash
+# Option 1: Generate a new UI in a specific aesthetic
+amplifier --bundle taste run "Build a Notion-style dashboard hero section in Next.js with Tailwind"
+# → loads design-taste + minimalist-taste, generates faithful code
+
+# Option 2: Audit an existing UI codebase
+amplifier --bundle taste run "Audit src/components/ for design taste violations"
+# → delegates to taste:design-critic agent, produces structured report
+
+# Option 3: Bootstrap a design system for a new project
+amplifier --bundle taste run "I'm starting a new B2B SaaS app — help me lock in an aesthetic"
+# → runs taste:recipes/design-system-bootstrap interview
+```
+
+If you're unsure which archetype to use, just describe your project. The
+bundle's instructions tell the model how to disambiguate based on keywords
+("Notion-style" → minimalist, "Swiss design" → brutalist, "luxury" →
+soft-editorial, "GPT-strict" → gpt-taste).
 
 ## What's inside
 
@@ -110,12 +137,35 @@ amplifier bundle add file://$HOME/dev/amplifier-bundle-taste
 | **Upgrading an existing project** | `redesign-existing-projects.md` |
 | **Image-first design pipeline** | `recipes/image-to-code.yaml` |
 
+### Prerequisites for `image-to-code` recipe
+
+This recipe has two runtime dependencies that are not bundled:
+
+1. **Imagegen MCP server** — required for generating reference images in stage 1.
+   Install: see <https://github.com/microsoft/amplifier-mcp-imagegen> (or set
+   `archetype` and provide your own reference images).
+
+2. **(Optional) `amplifier-bundle-design-intelligence`** — if installed, the
+   recipe will use its `component-designer` agent. If not, the bundle's own
+   `taste:component-designer` agent (defined in `agents/`) handles
+   implementation.
+
+The recipe degrades gracefully if these are missing — but you'll get clearer
+errors with them installed.
+
 ## Composition rule (the bricks-and-studs pattern)
 
 The four aesthetic archetypes (`minimalist`, `brutalist`, `soft-editorial`,
 `gpt`) are **mutually exclusive** — never compose two together (minimalist
 bans gradients; soft-editorial requires them). Compose the **base + exactly
-one archetype**, or use one archetype standalone.
+one archetype**, or use `gpt-taste` standalone (it replaces the base).
+
+When two skills are simultaneously loaded into a session's context, the
+agent resolves conflicting rules via natural-language instruction-following —
+more specific archetype constraints take precedence over the base's generic
+rules. This is NOT the same as Amplifier's bundle-level composition merge
+(which entirely replaces parent instructions). Skills accumulate; bundles
+replace.
 
 The output-discipline behavior is **always compatible** with any combination —
 mount it globally.

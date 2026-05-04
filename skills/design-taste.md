@@ -91,52 +91,17 @@ To actively combat generic AI designs, systematically implement these high-end c
 
 ## 6. TECHNICAL REFERENCE (Dial Definitions)
 
-### DESIGN_VARIANCE (Level 1-10)
-* **1-3 (Predictable):** Flexbox `justify-center`, strict 12-column symmetrical grids, equal paddings.
-* **4-7 (Offset):** Use `margin-top: -2rem` overlapping, varied image aspect ratios (e.g., 4:3 next to 16:9), left-aligned headers over center-aligned data.
-* **8-10 (Asymmetric):** Masonry layouts, CSS Grid with fractional units (e.g., `grid-template-columns: 2fr 1fr 1fr`), massive empty zones (`padding-left: 20vw`). 
-* **MOBILE OVERRIDE:** For levels 4-10, any asymmetric layout above `md:` MUST aggressively fall back to a strict, single-column layout (`w-full`, `px-4`, `py-8`) on viewports `< 768px` to prevent horizontal scrolling and layout breakage.
-
-### MOTION_INTENSITY (Level 1-10)
-* **1-3 (Static):** No automatic animations. CSS `:hover` and `:active` states only.
-* **4-7 (Fluid CSS):** Use `transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1)`. Use `animation-delay` cascades for load-ins. Focus strictly on `transform` and `opacity`. Use `will-change: transform` sparingly.
-* **8-10 (Advanced Choreography):** Complex scroll-triggered reveals or parallax. Use Framer Motion hooks. NEVER use `window.addEventListener('scroll')`.
-
-### VISUAL_DENSITY (Level 1-10)
-* **1-3 (Art Gallery Mode):** Lots of white space. Huge section gaps. Everything feels very expensive and clean.
-* **4-7 (Daily App Mode):** Normal spacing for standard web apps.
-* **8-10 (Cockpit Mode):** Tiny paddings. No card boxes; just 1px lines to separate data. Everything is packed. **Mandatory:** Use Monospace (`font-mono`) for all numbers.
+The 3 parametric dials (DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY) and
+their threshold-driven branching logic are defined in
+`@taste:context/dials.md`. Treat that file as authoritative — these dials act
+as global session variables.
 
 ## 7. AI TELLS (Forbidden Patterns)
-To guarantee a premium, non-generic output, you MUST strictly avoid these common AI design signatures unless explicitly requested:
 
-### Visual & CSS
-* **NO Neon/Outer Glows:** Do not use default `box-shadow` glows or auto-glows. Use inner borders or subtle tinted shadows.
-* **NO Pure Black:** Never use `#000000`. Use Off-Black, Zinc-950, or Charcoal.
-* **NO Oversaturated Accents:** Desaturate accents to blend elegantly with neutrals.
-* **NO Excessive Gradient Text:** Do not use text-fill gradients for large headers.
-* **NO Custom Mouse Cursors:** They are outdated and ruin performance/accessibility.
-
-### Typography
-* **NO Inter Font:** Banned. Use `Geist`, `Outfit`, `Cabinet Grotesk`, or `Satoshi`.
-* **NO Oversized H1s:** The first heading should not scream. Control hierarchy with weight and color, not just massive scale.
-* **Serif Constraints:** Use Serif fonts ONLY for creative/editorial designs. **NEVER** use Serif on clean Dashboards.
-
-### Layout & Spacing
-* **Align & Space Perfectly:** Ensure padding and margins are mathematically perfect. Avoid floating elements with awkward gaps.
-* **NO 3-Column Card Layouts:** The generic "3 equal cards horizontally" feature row is BANNED. Use a 2-column Zig-Zag, asymmetric grid, or horizontal scrolling approach instead.
-
-### Content & Data (The "Jane Doe" Effect)
-* **NO Generic Names:** "John Doe", "Sarah Chan", or "Jack Su" are banned. Use highly creative, realistic-sounding names.
-* **NO Generic Avatars:** DO NOT use standard SVG "egg" or Lucide user icons for avatars. Use creative, believable photo placeholders or specific styling.
-* **NO Fake Numbers:** Avoid predictable outputs like `99.99%`, `50%`, or basic phone numbers (`1234567`). Use organic, messy data (`47.2%`, `+1 (312) 847-1928`).
-* **NO Startup Slop Names:** "Acme", "Nexus", "SmartFlow". Invent premium, contextual brand names.
-* **NO Filler Words:** Avoid AI copywriting clichés like "Elevate", "Seamless", "Unleash", or "Next-Gen". Use concrete verbs.
-
-### External Resources & Components
-* **NO Broken Unsplash Links:** Do not use Unsplash. Use absolute, reliable placeholders like `https://picsum.photos/seed/{random_string}/800/600` or SVG UI Avatars.
-* **shadcn/ui Customization:** You may use `shadcn/ui`, but NEVER in its generic default state. You MUST customize the radii, colors, and shadows to match the high-end project aesthetic.
-* **Production-Ready Cleanliness:** Code must be extremely clean, visually striking, memorable, and meticulously refined in every detail.
+The full ban list of generic AI design fingerprints — visual/CSS, typography,
+layout/spacing, content/data ("Jane Doe" effect), and external resources — is
+maintained in `@taste:context/ai-tells-design.md`. Treat that file as
+authoritative for forbidden patterns.
 
 ## 8. THE CREATIVE ARSENAL (High-End Inspiration)
 Do not default to generic UI. Pull from this library of advanced concepts to ensure the output is visually striking and memorable. When appropriate, leverage **GSAP (ScrollTrigger/Parallax)** for complex scrolltelling or **ThreeJS/WebGL** for 3D/Canvas animations, rather than basic CSS motion. **CRITICAL:** Never mix GSAP/ThreeJS with Framer Motion in the same component tree. Default to Framer Motion for UI/Bento interactions. Use GSAP/ThreeJS EXCLUSIVELY for isolated full-page scrolltelling or canvas backgrounds, wrapped in strict useEffect cleanup blocks.
@@ -203,30 +168,12 @@ Do not default to generic UI. Pull from this library of advanced concepts to ens
 * **Lens Blur Depth:** Dynamic focus blurring background UI layers to highlight a foreground action.
 
 ## 9. THE "MOTION-ENGINE" BENTO PARADIGM
-When generating modern SaaS dashboards or feature sections, you MUST utilize the following "Bento 2.0" architecture and motion philosophy. This goes beyond static cards and enforces a "Vercel-core meets Dribbble-clean" aesthetic heavily reliant on perpetual physics.
 
-### A. Core Design Philosophy
-* **Aesthetic:** High-end, minimal, and functional.
-* **Palette:** Background in `#f9fafb`. Cards are pure white (`#ffffff`) with a 1px border of `border-slate-200/50`.
-* **Surfaces:** Use `rounded-[2.5rem]` for all major containers. Apply a "diffusion shadow" (a very light, wide-spreading shadow, e.g., `shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)]`) to create depth without clutter.
-* **Typography:** Strict `Geist`, `Satoshi`, or `Cabinet Grotesk` font stack. Use subtle tracking (`tracking-tight`) for headers.
-* **Labels:** Titles and descriptions must be placed **outside and below** the cards to maintain a clean, gallery-style presentation.
-* **Pixel-Perfection:** Use generous `p-8` or `p-10` padding inside cards.
-
-### B. The Animation Engine Specs (Perpetual Motion)
-All cards must contain **"Perpetual Micro-Interactions."** Use the following Framer Motion principles:
-* **Spring Physics:** No linear easing. Use `type: "spring", stiffness: 100, damping: 20` for a premium, weighty feel.
-* **Layout Transitions:** Heavily utilize the `layout` and `layoutId` props to ensure smooth re-ordering, resizing, and shared element state transitions.
-* **Infinite Loops:** Every card must have an "Active State" that loops infinitely (Pulse, Typewriter, Float, or Carousel) to ensure the dashboard feels "alive".
-* **Performance:** Wrap dynamic lists in `<AnimatePresence>` and optimize for 60fps. **PERFORMANCE CRITICAL:** Any perpetual motion or infinite loop MUST be memoized (React.memo) and completely isolated in its own microscopic Client Component. Never trigger re-renders in the parent layout.
-
-### C. The 5-Card Archetypes (Micro-Animation Specs)
-Implement these specific micro-animations when constructing Bento grids (e.g., Row 1: 3 cols | Row 2: 2 cols split 70/30):
-1. **The Intelligent List:** A vertical stack of items with an infinite auto-sorting loop. Items swap positions using `layoutId`, simulating an AI prioritizing tasks in real-time.
-2. **The Command Input:** A search/AI bar with a multi-step Typewriter Effect. It cycles through complex prompts, including a blinking cursor and a "processing" state with a shimmering loading gradient.
-3. **The Live Status:** A scheduling interface with "breathing" status indicators. Include a pop-up notification badge that emerges with an "Overshoot" spring effect, stays for 3 seconds, and vanishes.
-4. **The Wide Data Stream:** A horizontal "Infinite Carousel" of data cards or metrics. Ensure the loop is seamless (using `x: ["0%", "-100%"]`) with a speed that feels effortless.
-5. **The Contextual UI (Focus Mode):** A document view that animates a staggered highlight of a text block, followed by a "Float-in" of a floating action toolbar with micro-icons.
+The Bento 2.0 architecture — core design philosophy, animation engine specs
+(Framer Motion spring physics, layout transitions, infinite loops), and the 5
+card archetypes (Intelligent List, Command Input, Live Status, Wide Data
+Stream, Contextual UI) — is defined in `@taste:context/bento-2.md`. Treat
+that file as authoritative when generating Bento dashboards.
 
 ## 10. FINAL PRE-FLIGHT CHECK
 Evaluate your code against this matrix before outputting. This is the **last** filter you apply to your logic.

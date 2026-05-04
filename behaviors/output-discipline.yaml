@@ -1,36 +1,19 @@
 # behaviors/output-discipline.yaml
 #
-# Always-on output completeness behavior. When this bundle is mounted, this
-# behavior auto-loads the `output-discipline` skill at session start so every
-# assistant turn produces full code with no `// ...` placeholders, no
-# "for brevity" hedges, and a defined pause/resume protocol when output is
-# genuinely token-limited.
-#
-# The auto-load mechanism below uses the `skills.auto_load` key — the same
-# shape Amplifier uses for behavior-driven skill mounting. If the host harness
-# does not honor `skills.auto_load`, the fallback `context.inject` block will
-# still inline the skill body into the system context, preserving the
-# always-on guarantee.
+# Always-on output completeness enforcement.
+# Injects the output-discipline skill into every session that mounts this behavior.
 
 bundle:
-  name: output-discipline
+  name: output-discipline-behavior
   version: 0.1.0
   description: >-
-    Always-on output completeness enforcement — auto-loads the
-    output-discipline skill on session start so every assistant turn produces
-    full code without `// ...` placeholders or "for brevity" hedges.
+    Always-on output completeness enforcement — injects the output-discipline
+    skill into every session that mounts this behavior. Bans `// ...` placeholders,
+    "for brevity" hedges, structural elision, and defines a clean pause/resume
+    protocol for token-limited outputs. Mount on every Amplifier session that
+    produces code, not just frontend ones.
 
-# Primary mechanism: auto-load the skill on session start.
-skills:
-  auto_load:
-    - taste:skills/output-discipline
-
-# Fallback mechanism: if the harness does not honor `skills.auto_load`, inject
-# the skill body directly into the session system context. Either path yields
-# the same always-on behavior; harnesses that honor both will simply favor
-# the structured `auto_load` and no-op the inject.
 context:
-  inject:
-    - source: taste:skills/output-discipline.md
-      scope: session
-      position: prepend
+  include:
+    - taste:context/instructions.md
+    - taste:skills/output-discipline.md
