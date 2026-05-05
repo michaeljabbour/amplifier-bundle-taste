@@ -2,7 +2,7 @@
 bundle:
   name: taste
   version: 0.3.0
-  description: Anti-slop frontend design taste — ported from Leonxlnx/taste-skill. Provides a base design-taste skill, four mutually-exclusive aesthetic archetype overlays (minimalist, brutalist, soft-editorial, gpt-strict), an audit-then-fix redesign skill, a generic design-context-generator, an always-on output-discipline behavior preventing placeholder truncation, and an image-to-code recipe for image-first design-to-code workflows. Note: `gpt-taste` is standalone — use instead of, not with, the design-taste base.
+  description: "Anti-slop frontend design taste — ported from Leonxlnx/taste-skill. Provides a base design-taste skill, four mutually-exclusive aesthetic archetype overlays (minimalist, brutalist, soft-editorial, gpt-strict), an audit-then-fix redesign skill, a generic design-context-generator, an always-on output-discipline behavior preventing placeholder truncation, and an image-to-code recipe for image-first design-to-code workflows. Note: `gpt-taste` is standalone — use instead of, not with, the design-taste base."
 
 includes:
   - bundle: git+https://github.com/microsoft/amplifier-foundation@main
